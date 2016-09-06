@@ -8,62 +8,59 @@ public class Week3_Problem4 {
             return 0;
         }
         
-        int[] hash = new int[256];
         int len = s.length();
-        int maxLen = 0;       
-        int front = 0;       
+        int maxLen = 0;      
+        int front = 0, back = 0;
         Set<Character> set = buildSet(s, k);
-              
-        for(int back = 0; back < len; back++){    
-        	while(front < len && !set.contains(s.charAt(front))){
-        		for(int i = 0; i < 256; i++){
-        			hash[i] = 0;
-        		}
-
-        		front++;
-        		back = front;
-        	}
-        	
-        	while(front < len && !isValid(hash, k) && set.contains(s.charAt(front))){
-        		hash[s.charAt(front)]++;
+        
+        while(back < len){
+        	while(front < len && set.contains(s.charAt(front))){
         		front++;
         	}
         	
-        	if(isValid(hash, k)){
-        		maxLen = Math.max(maxLen, front - back);
-        		
-        		while(front < len && set.contains(s.charAt(front))){
-        			hash[s.charAt(front)]++;
-        			front++;
-        			
-        			if(isValid(hash, k)){
-        				maxLen = Math.max(maxLen, front - back);
-        			}
-        		}
-        	}     		
-        	
-        	if(back < len){
-        		hash[s.charAt(back)]--;
-        	}
+        	int localMax = getMaxLen(s, back, front - 1, k);
+        	maxLen = Math.max(maxLen, localMax);
+        	front++;
+        	back = front;
         }
         
         return maxLen;
     }
-	
-	public boolean isValid(int[] hash, int k){
-		int count = 0;
+    
+    public int getMaxLen(String s, int start, int end, int k){
+		int[] hash = new int[256];
+		int localMax = 0;
+		Set<Character> numSet = new HashSet<Character>();
+		int front = start, back = start;
+		
+		for(int i = start; i <= end; i++){
+    		hash[s.charAt(i)]++;
+    	}
 		
 		for(int i = 0; i < 256; i++){
-			if(hash[i] > 0){
-				count++;
-			}
-			
 			if(hash[i] > 0 && hash[i] < k){
-				return false;
+				numSet.add((char) i);
+				System.out.println("char = " + (char) i);
 			}
 		}
-
-		return count > 0;
+		
+		while(back <= end){
+			int[] validHash = new int[256];
+			
+			while(front <= end && !numSet.contains(s.charAt(front))){
+				validHash[s.charAt(front)]++;
+				front++;
+			}
+			
+			if(isValid(validHash, k)){
+				localMax = Math.max(localMax, front - back);
+			}
+			
+			front++;
+			back = front;
+		}
+		
+		return localMax;
 	}
 	
 	public Set<Character> buildSet(String s, int k){
@@ -83,12 +80,30 @@ public class Week3_Problem4 {
 		return set;
 	}
 	
+	public boolean isValid(int[] hash, int k){
+		int count = 0;
+		
+		for(int i = 0; i < 256; i++){
+			if(hash[i] > 0){
+				count++;
+			}
+			
+			if(hash[i] > 0 && hash[i] < k){
+				return false;
+			}
+		}
+
+		return count > 0;
+	}
+	
+	
+	
 	
 	
 	public static void main(String[] args){
 		Week3_Problem4 t = new Week3_Problem4();
 //		String s = "aaaaaaaaaaaaaaaabbbbbbbbbbbbaaaaaaabbbbbbbbbbbbcccccccccccdddddddddddddddddddeeeeeeeeeeeeeeefffffffffffffffgggggggggggggggggggghhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkk";
-		String s = "aaabb";
+		String s = "ababacb";
 		int k = 3;
 		System.out.println(t.longestSubstring(s, k));
 	}
